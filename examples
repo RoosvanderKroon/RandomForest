@@ -1,0 +1,87 @@
+########### randomforest using caTools and SplitRatio ####################
+
+install.packages ("randomForest")
+install.packages ("caTools"
+
+library (randomForest)
+library (caTools)
+
+data<-iris
+head(data)
+str(data)
+
+# Splitting data in train and test data 
+split <- sample.split(data, SplitRatio = 0.7) # 70% of data will be training set and remaining 30% will be testing
+
+train <- subset(data, split == "TRUE") 
+test <- subset(data, split == "FALSE") 
+set.seed(120)  # Setting seed for reproducibility, does not matter what number
+rf <- randomForest(x = train[-5], y = train$Species, ntree = 500) 
+rf
+
+# terminology
+# out of bag error (OOB) is the prediction error value, here the OOB is 5.56% so 94.44% of training data set model is accurate
+
+
+# predicting test dataset result using predict function
+y_pred = predict(rf, newdata = test[-5]) 
+
+# confusion matrix, used for seeing correctly classified data
+confusion_mtx <- table(test[, 5], y_pred) 
+confusion_mtx 
+
+# plotting rf to see error stabilizing with increasing number of trees
+
+plot(rf)
+
+# using importance function to see the most influential variable on classification
+importance(rf)
+# here petal.length is the most important variable
+# plotting
+varImpPlot(rf)
+
+####################### random forest using sample and predict function ###############
+
+install.packages ("randomForest")
+install.packages ("caret") # classification and regression training 
+
+library (randomForest)
+library (caret)
+
+data<-iris
+head(data)
+str(data)
+
+# converting to $Species to a factor
+data$Species <- as.factor(data$Species)
+
+# dividing data in training and testing set using sample function
+set.seed(222)
+index <- sample(2, nrow(data), replace = TRUE, prob = c(0.7, 0.3))
+train <- data[index==1,]
+test <- data[index==2,]
+
+# random forest
+rf <- randomForest(Species~., data=train, proximity=TRUE) 
+rf
+
+# OOB is 4.95% so training data set model accuracy is 95.05%
+
+result <- predict(rf, test)
+
+table(result, test$Species)
+
+# confusion matrix to see accuracy
+
+confusionMatrix(result, test$Species)
+
+# accuracy is 93.88%
+
+
+
+
+
+
+
+
+
