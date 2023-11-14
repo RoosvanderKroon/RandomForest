@@ -1,0 +1,85 @@
+#################### rf with ctg data #################
+
+#download ctg data from internet and save
+# set wd and import data
+setwd("C:/ .../...")
+data<-read.csv(file path, file name)
+
+data$NSP <- as.factor(data$NSP)
+table(data$NSP)
+
+# splitting data into training and testing set
+trainingdata <- data[independent_samples==1,]
+testingdata<- data[independent_samples==2,]
+
+
+#random forest model
+rfm <- randomForest(NSP~., data=trainingdata)
+print(rfm)
+
+# looking at ntrees is 500 (which is the default number)
+# mtry is the number of variables used at each split node, here it is 4 (usually it is roughly the sqrt of total n features, 21)
+# OOB is prediction error value, here is 5.82 so the training model accuracy is around 94%
+
+# predict and confusion matrix training data
+p1 <- predict(rfm, trainingdata)
+confusionMatrix(p1, trainingdata$NSP) # accuracy is really high because it is the training data
+
+# predict and confusion matrix testing data
+
+p2 <- predict (rfm, testingdata)
+confusionMatrix(p2, testingdata$NSP)# accuracy is around 93% more realistic than the confusion matrix accuracy of training data
+
+#plotting 
+plot(rfm)
+#you can see oob error stabilizes after about 300 trees, so even if you would increase ntree over 300 it does not improve the models accuracy
+
+# tuning random forest model searches for the optimal value (with respect to Out-of-Bag error estimate) of mtry
+t <- tuneRF(trainingdata[,-22],trainingdata[,22], stepFactor=0.5, plot=TRUE, ntreeTry=300, trace=TRUE, improve=0.05)
+# Error in randomForest.default(x, y, mtry = mtryStart, ntree = ntreeTry,  :length of response must be the same as predictors
+trainingdata <- as.data.frame(trainingdata)
+t <- tuneRF(trainingdata[,-22],trainingdata[,22], stepFactor=0.5, plot= TRUE, ntreeTry= 300, trace= TRUE, improve= 0.05)
+
+# plot shows that oob is lowest at mtry of 8
+
+# going back to our rfm
+rfm <- randomForest(NSP~., data=trainingdata, ntree=300, mtry=8, importance= TRUE, proximity= TRUE)
+print(rfm)
+
+# now oob is 5.62% so about .2 lower
+# so lets make the predictions again with our more accurate rfm
+p1 <- predict(rfm, trainingdata)
+confusionMatrix(p1, trainingdata$NSP)
+p2 <- predict (rfm, testingdata)
+confusionMatrix(p2, testingdata$NSP)
+
+# overall accuracy not greatly increased but some sensitivity cases are improved
+
+# making histogram of number of nodes
+hist(treesize(rfm), main ="No. of nodes for the trees", col= "green")
+# histogram shows that there are around 80 trees with around 80 nodes and around 5 trees with 60 nodes or over 100 nodes
+
+# variable importance
+importance (rfm)
+varImpPlot(rfm)
+
+# meandecreaseaccuracy shows how much the models accuracy would decrease if we left at that variable, in this case most
+# influential variable is "ASTV"
+# meandecrease Gini is a measure of how each variable contributes to the homogeneity of the nodes and leaves in the resulting random forest,
+# in this case variable "MSTV"
+
+varImpPlot(rfm, sort=TRUE, n=10, main = "top 10 most important variables")
+varUsed(rfm) # see how many times variable has been used
+
+# Partial dependence plot visualizes the marginal effect of a predictor variable on the predictive variable by plotting the average model outcome at different levels of the predictor variable
+partialPlot(rfm, trainingdata, ASTV, "1")
+# shows that when ASTV until 60 predicts class 1 (Normal) more strongly, and that decreases with increased ASTV value
+ partialPlot(rfm, trainingdata, ASTV, "3")
+# shows that ASTV above 60 strongle predicts class 3 (pathology)
+
+# Obtaining a single tree from forest
+getTree(rfm, 1, labelVar=TRUE)
+# status -1 indicate the terminal nodes and then follow the prediction classes
+
+# Multidimenional scaling plot of proximity indicators
+MDSplot(rfm, trainingdata$NSP)
