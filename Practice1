@@ -1,0 +1,7 @@
+########### practice 1 with QGIS polygons and rf classification in R ##############
+# First get raster image in QGIS --> my case I used google satellite and the Raster tool to crop area of interest into raster image and ave it as .tif file
+# then start making polygons of different landcover site, not too big!
+# I created 11 agriculture polygons, 8 forest, and 10 field
+# setwd("/media/sf_exchange/landsatdata/")
+img <- brick("LC081930232017060201T1-SC20180613160412_subset.tif")
+shp <- shapefile("training_data.shp")
