@@ -27,6 +27,23 @@ levels(as.factor(datapolygons$class)
 
 rasterdata <- extract(aoi, datapolygons, df = TRUE)
 
+smp.size <- rep(min(summary(rasterdata$cl)), nlevels(rasterdata$cl))
+rfmodel <- tuneRF(x = rasterdata[-ncol(rasterdata)],
+                   y = rasterdata$cl,
+                   sampsize = smp.size,
+                   strata = rasterdata$cl,
+                   ntree = 250,
+                   importance = TRUE,
+                   doBest = TRUE)
+# output: 
+#mtry = 1  OOB error = 8.84% 
+#Searching left ...
+#Searching right ...
+#mtry = 2 	OOB error = 8.9% 
+#-0.006841369 0.05 
+Error: cannot allocate vector of size 2.0 Gb
+## too big 
+
 
 
 
