@@ -1,7 +1,32 @@
 ########### practice 1 with QGIS polygons and rf classification in R ##############
-# First get raster image in QGIS --> my case I used google satellite and the Raster tool to crop area of interest into raster image and ave it as .tif file
-# then start making polygons of different landcover site, not too big!
-# I created 11 agriculture polygons, 8 forest, and 10 field
-# setwd("/media/sf_exchange/landsatdata/")
-img <- brick("LC081930232017060201T1-SC20180613160412_subset.tif")
-shp <- shapefile("training_data.shp")
+# First get raster image in QGIS --> my case I used google satellite and the Raster tool to crop area of interest into raster image and 
+# save it as "Training_data.tif" file
+# then start making polygons of different landcover site, not too big! with attribute "class"
+# make sure that the shapefile and rasterfile use the same CRS!
+# add classes in layer properties, symbology so see different classes
+# export layer and save as shapefile
+# let's go to R
+
+library (raster)
+library (ggplot2)
+library (caret)
+library (randomForest)
+# set working directory setwd("C://your_path/.../...")
+
+# assign rasterfile with brick function (multiple layers)
+aoi <- brick("Training_data.tif")
+# assign shapefile data and check if raster file and shapefile have the same CRS
+datapolygons <- shapefile("landclassification2.shp")
+
+# start plotting, first the rasterfile
+plotRGB(aoi, r = 1, g = 2, b = 3, stretch = "lin")
+plot(datapolygons, col= "red", add= TRUE)
+
+# transform into factor and see classifications
+levels(as.factor(datapolygons$class)
+
+rasterdata <- extract(aoi, datapolygons, df = TRUE)
+
+
+
+
