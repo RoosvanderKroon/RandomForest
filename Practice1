@@ -1,12 +1,16 @@
 ########### practice 1 with QGIS polygons and rf classification in R ##############
+
+# PART 1 - QGIS #
+
 # First get raster image in QGIS --> my case I used google satellite and the Raster tool to crop area of interest into raster image and 
 # save it as "Training_data.tif" file
 # then start making polygons of different landcover site, not too big! with attribute "class"
 # make sure that the shapefile and rasterfile use the same CRS!
-# add classes in layer properties, symbology so see different classes
+# add classes in layer properties, symbology so see different classes (agriculture, forest, field)
 # export layer and save as shapefile
 # let's go to R
 
+# PART 2 - R #
 library (raster)
 library (ggplot2)
 library (caret)
@@ -23,9 +27,13 @@ plotRGB(aoi, r = 1, g = 2, b = 3, stretch = "lin")
 plot(datapolygons, col= "red", add= TRUE)
 
 # transform into factor and see classifications
-levels(as.factor(datapolygons$class)
+levels(as.factor(datapolygons$class))
 
-rasterdata <- extract(aoi, datapolygons, df = TRUE)
+rasterdata <- extract(aoi, datapolygons, df = TRUE) #make sure that tidyr package is turned off as it also has extract function and leads to error
+# create extra column landcover class corresponding to ID, i.e. the polygons classifications
+rasterdata$landcover <- as.factor( datapolygons$class[match(rasterdata$ID, seq(nrow(datapolygons)))])
+# Remove the ID column, not needed anymore
+
 
 smp.size <- rep(min(summary(rasterdata$cl)), nlevels(rasterdata$cl))
 rfmodel <- tuneRF(x = rasterdata[-ncol(rasterdata)],
@@ -43,6 +51,19 @@ rfmodel <- tuneRF(x = rasterdata[-ncol(rasterdata)],
 #-0.006841369 0.05 
 Error: cannot allocate vector of size 2.0 Gb
 ## too big 
+## Error messages beginning '⁠cannot allocate vector of size⁠' indicate a failure to obtain memory, either because the 
+# size exceeded the address-space limit for a process or, more likely, because the system was unable to provide the memory
+
+# Try the gc() command, used for garbage collection
+gc()
+
+memory.limit() ## to show current memory limit, 3458
+memory.limit(10000) ## to increase memory size
+
+# run tuneRF again, but still vector too big to allocate this time even 4.0 GB
+
+
+
 
 
 
