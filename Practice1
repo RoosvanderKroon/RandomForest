@@ -65,16 +65,67 @@ Error: cannot allocate vector of size 2.0 Gb
 ## Error messages beginning '⁠cannot allocate vector of size⁠' indicate a failure to obtain memory, either because the 
 # size exceeded the address-space limit for a process or, more likely, because the system was unable to provide the memory
 
-#### attempt 1 #####
+########
 # Try the gc() command, used for garbage collection and increase memory limit
 gc()
 memory.limit() ## to show current memory limit, 3458
 memory.limit(9999999999) ## to increase memory size
 # run tuneRF again, but still vector too big to allocate this time even 4.0 GB (another time 8110 GB)
-#### attempt 2 #####
+23-11-2023
+#### Lots of googling, simply do not have enough RAM
+# readyboost with flashdrives not possible on laptop as the system is already "fast enough"
+
+# subsetting the data ###### can this be done with pixels from satellite image though? random extracting rows for subset
+subset<- rasterdata[unlist(tapply(1:nrow(rasterdata),rasterdata$landcover,function(x) sample(x,100000))),]
+
+# so for the three landcover classes random take 100000 rows, so total subset df is 300000, roughly third of orignal df
+
+# try rf with splitting data in train and test
+subset$landcover <- as.factor(subset$landcover)
+
+set.seed(123)
+ind<- sample(2, nrow(subset), replace=TRUE, prob = c(0.7,0.3))
+train<- subset[ind==1,]
+test<- subset[ind==2,]
+rfm <- randomForest(landcover~., data=train)
+# Error: cannot allocate vector of size 1.6 Gb
+
+# Let's try first one with tuneRF
+smp.size <- rep(min(summary(subset$landcover)), nlevels(subset$landcover))
+rfmodel <- tuneRF(x = subset[-ncol(subset)],
+                   y = subset$landcover,
+                   sampsize = smp.size,
+                   strata = subset$landcover,
+                   ntree = 250,
+                   importance = TRUE,
+                   doBest = TRUE)
+#  Error: cannot allocate vector of size 2.2 Gb doBest = TRUE)
+# 60.000 is biggest, so 180.000 in total, without error 
+subset<- rasterdata[unlist(tapply(1:nrow(rasterdata),rasterdata$landcover,function(x) sample(x,60000))),]
+subset$landcover <- as.factor(subset$landcover)
+
+set.seed(123)
+ind<- sample(2, nrow(subset), replace=TRUE, prob = c(0.7,0.3))
+train<- subset[ind==1,]
+test<- subset[ind==2,]
+rfm <- randomForest(landcover~., data=train)
+print(rfm)
+# ntrees 500, n variable at each split 1, OOB 10.28% meaning that around 90% of model is accurate
+
+p1<- predict(rfm, train)
+confusionMatrix(p1,train$landcover)
+# Accuracy : 0.9297          
+   #              95% CI : (0.9283, 0.9311)
 
 
+# let's do it on test data to see for real
+p2<- predict(rfm, test)
+confusionMatrix(p2, test$landcover
 
+#Accuracy : 0.8992          
+ #                95% CI : (0.8966, 0.9017)
+
+                
 
 
 
