@@ -132,6 +132,14 @@ result <- predict(aoi,rfm,filename = "classification.tif",overwrite = TRUE)
  plot(result, axes = FALSE, box = FALSE, col = c("#964b00", # agri "#013220", # forest,"#90ee90" # field))
                 
 # plot is small, stays small when adjusting the panes, so need to resize
+# have to adjust par
+old.par = par(mar=c(1,1,1,1))
+plot(result, 
+      axes = FALSE, 
+      box = FALSE,
+      col = c("#964b00", # agri
+              "#90ee90", # field
+              "#012e01" # forest))
 
 
 
