@@ -60,7 +60,7 @@ rfmodel <- tuneRF(x = rasterdata[-ncol(rasterdata)],
 #-0.006841369 0.05 
 Error: cannot allocate vector of size 2.0 Gb
 
-
+########## PART 2.1 subsetting data too decrease size
 ## too big 
 ## Error messages beginning '⁠cannot allocate vector of size⁠' indicate a failure to obtain memory, either because the 
 # size exceeded the address-space limit for a process or, more likely, because the system was unable to provide the memory
@@ -75,7 +75,7 @@ memory.limit(9999999999) ## to increase memory size
 #### Lots of googling, simply do not have enough RAM
 # readyboost with flashdrives not possible on laptop as the system is already "fast enough"
 
-# subsetting the data ###### can this be done with pixels from satellite image though? random extracting rows for subset
+# subsetting the data ###### 
 subset<- rasterdata[unlist(tapply(1:nrow(rasterdata),rasterdata$landcover,function(x) sample(x,100000))),]
 
 # so for the three landcover classes random take 100000 rows, so total subset df is 300000, roughly third of orignal df
@@ -125,7 +125,13 @@ confusionMatrix(p2, test$landcover
 #Accuracy : 0.8992          
  #                95% CI : (0.8966, 0.9017)
 
+####### PART 3 -Running the model ###########33
+result <- predict(aoi,rfm,filename = "classification.tif",overwrite = TRUE)
+## takes about 1,5 hour
+
+ plot(result, axes = FALSE, box = FALSE, col = c("#964b00", # agri "#013220", # forest,"#90ee90" # field))
                 
+# plot is small, stays small when adjusting the panes, so need to resize
 
 
 
