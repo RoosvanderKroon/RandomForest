@@ -120,7 +120,7 @@ confusionMatrix(p1,train$landcover)
 
 # let's do it on test data to see for real
 p2<- predict(rfm, test)
-confusionMatrix(p2, test$landcover
+confusionMatrix(p2, test$landcover)
 
 #Accuracy : 0.8992          
  #                95% CI : (0.8966, 0.9017)
@@ -138,6 +138,8 @@ plot(result,
       axes = FALSE, 
       box = FALSE,
       col = c("brown","light  green", "dark green"))
+
+######### 
 
 
 
