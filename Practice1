@@ -125,11 +125,11 @@ confusionMatrix(p2, test$landcover
 #Accuracy : 0.8992          
  #                95% CI : (0.8966, 0.9017)
 
-####### PART 3 -Running the model ###########33
+####### PART 3 -Running the model and plotting result ###########33
 result <- predict(aoi,rfm,filename = "classification.tif",overwrite = TRUE)
 ## takes about 1,5 hour
 
- plot(result, axes = FALSE, box = FALSE, col = c("#964b00", # agri "#013220", # forest,"#90ee90" # field))
+ plot(result, axes = FALSE, box = FALSE, col = c("brown, # agri "light green", # field,"dark green" # forest))
                 
 # plot is small, stays small when adjusting the panes, so need to resize
 # have to adjust par
@@ -137,9 +137,9 @@ old.par = par(mar=c(1,1,1,1))
 plot(result, 
       axes = FALSE, 
       box = FALSE,
-      col = c("#964b00", # agri
-              "#90ee90", # field
-              "#012e01" # forest))
+      col = c("brown","light  green", "dark green"))
+
+
 
 
 
