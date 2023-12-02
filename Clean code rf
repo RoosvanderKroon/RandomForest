@@ -56,7 +56,7 @@ confusionMatrix(p1, test$landcover)
 ####### Running the model and plotting result ###########
 
 result <- predict(aoi,rfm,filename = "classification.tif",overwrite = TRUE)
-plot(result, axes = FALSE, box = FALSE, col = c("brown, # agri "light green", # field,"dark green" # forest, "grey" #road, "blue" # water))
+plot(result, axes = FALSE, box = FALSE, col = c("brown", # agri "light green"# field,"dark green" # forest, "gray" #road, "blue" # water))
 
 
 
