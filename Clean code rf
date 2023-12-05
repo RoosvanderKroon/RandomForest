@@ -30,8 +30,6 @@ rasterdata<- rasterdata[-1]
 
 # see how many rows for each landcover type
 summary(rasterdata$landcover)
-#Agriculture       Field      Forest        Road       Water 
-#      68093       46244       47933       48446       37980 
 
 # subsetting the data ###### 
 subset<- rasterdata[unlist(tapply(1:nrow(rasterdata),rasterdata$landcover,function(x) sample(x,15000))),]
@@ -50,13 +48,11 @@ print(rfm)
 p1<- predict(rfm, test)
 confusionMatrix(p1, test$landcover)
 
-# Accuracy : 0.9877          
-#                 95% CI : (0.9862, 0.9891)
 
 ####### Running the model and plotting result ###########
 
 result <- predict(aoi,rfm,filename = "classification.tif",overwrite = TRUE)
-plot(result, axes = FALSE, box = FALSE, col = c("brown", # agri "light green"# field,"dark green" # forest, "gray" #road, "blue" # water))
+plot(result, axes = FALSE, box = FALSE, col = c("brown", # agri "light green"# field,"dark green" # forest, "gray" #anthropogenic, "blue" # water))
 
 
 
