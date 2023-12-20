@@ -19,12 +19,12 @@ names(aoi)<- c("red","green", "blue")
 names(aoi)
 
 # transform into factor and see classifications
-levels(as.factor(datapolygons$class))
+levels(as.factor(datapolygons$classes))
 #extract data and turn into dataframe
 rasterdata <- extract(aoi, datapolygons, df = TRUE) 
 
 # create extra column landcover class corresponding to column "ID", i.e. the polygons classifications
-rasterdata$landcover <- as.factor( datapolygons$class[match(rasterdata$ID, seq(nrow(datapolygons)))])
+rasterdata$landcover <- as.factor( datapolygons$classes[match(rasterdata$ID, seq(nrow(datapolygons)))])
 # Remove the ID column, not needed anymore
 rasterdata<- rasterdata[-1]
 
