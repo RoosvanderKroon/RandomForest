@@ -1,0 +1,39 @@
+library(raster)
+library(ggplot2)
+library(grainscape)
+library(terra)
+
+setwd("C:/Users/roosv/OneDrive/Unibo/Year 2/Thesis/QGIS/Practice/Practice5")
+classifiedraster<- raster("classifiedrasternorth.tif")
+
+plot(classifiedraster)
+
+smoothraster<- focal(rast(classifiedraster), w=3,
+                     fun="modal")
+plot(smoothraster)
+classifiedraster2 <-raster(smoothraster)
+
+
+
+isBecomes <- cbind(c(1, 2, 3, 4, 5), c(5,10,1,3,9))
+ Cost <- reclassify(classifiedraster2, rcl = isBecomes)
+ Cost_df <- ggGS(Cost)
+ Cost_df$value <- as.factor(Cost_df$value)
+
+ggplot() +
+  geom_raster(
+    data = Cost_df,
+    aes(x = x, y = y, fill = value)
+  ) +
+  scale_fill_brewer(type = "div", palette = "Paired", guide = "legend") +
+  guides(fill = guide_legend(title = "Resistance")) +
+  theme(legend.position = "right") + theme(axis.line=element_blank(),axis.text.x=element_blank(),
+                                           axis.text.y=element_blank(),axis.ticks=element_blank(),
+                                           axis.title.x=element_blank(),
+                                           axis.title.y=element_blank(),
+                                           panel.background=element_blank())
+
+patchMPG <- MPG(Cost, patch = (Cost == 1))
+
+plot(patchMPG, quick = "mpgPlot", theme = FALSE)
+?grainscape
