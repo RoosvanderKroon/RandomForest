@@ -1,0 +1,79 @@
+install.packages("randomForest")
+install.packages("caret")
+
+# assign cut out sentinel image of study area and use brick function
+aoi <- brick("rastersentinel.tif")
+# assign shapefile data
+datapolygons <- shapefile("polygonsnew2.shp")
+
+# plot the map with the shapefile of polygons
+plotRGB(aoi, r=3, g=2, b=1, stretch="lin")
+plot(datapolygons, col= "red", add= TRUE)
+
+# transform to as factor
+levels(as.factor(datapolygons$classes))
+
+#name variables 
+names(aoi) <- c("b2", "b3","b4", "b8")
+# extract data and turn into dataframe
+rasterdata <- extract(aoi, datapolygons, df = TRUE)
+ rasterdata$landcover <- as.factor( datapolygons$classes[match(rasterdata$ID, seq(nrow(datapolygons)))])
+ rasterdata<- rasterdata[-1]
+# see how many rows for each landcover type
+summary(rasterdata$landcover)
+
+# subsetting the data ###### 
+
+subset<- rasterdata[unlist(tapply(1:nrow(rasterdata),rasterdata$landcover,function(x) sample(x,4525))),]
+subset$landcover <- as.factor(subset$landcover)
+
+#splitting data into training and testing data
+
+set.seed(123)
+ind<- sample(2, nrow(subset), replace=TRUE, prob = c(0.7,0.3))
+train<- subset[ind==1,]
+test<- subset[ind==2,]
+#run randomforest 
+rfm <- randomForest(landcover~., data=train, importance=TRUE)
+print(rfm)
+
+p1<- predict(rfm, test)
+confusionMatrix(p1, test$landcover)
+
+#plot result classification
+
+result <- predict(aoi,rfm,filename = "classification1.tif",overwrite = TRUE)
+plot(result, axes = FALSE, box = FALSE, legend="none", col = c("brown", "white", "dark green", "green", "blue"))
+
+########################
+ 
+## plotting rfm 
+oob.error.data <- data.frame(
+  Trees=rep(1:nrow(rfm$err.rate), times=6),
+       Class=rep(c("OOB", "agriculture", "anthropogenic", "dense trees", "sparse trees", "water"), each=nrow(rfm$err.rate)),
+  Error=c(rfm$err.rate[,"OOB"], 
+             rfm$err.rate[,"agri"], 
+             rfm$err.rate[,"anthro"], rfm$err.rate[,"dense tree"], rfm$err.rate[,"sparse trees"], rfm$err.rate[,"water"]))
+
+p<-ggplot(data=oob.error.data, aes(x=Trees, y=Error)) +
+       geom_line(aes(linetype=Class))+ theme(plot.title = element_text(hjust=0.5, face = "bold"), axis.line = element_line(colour = "black"), panel.grid.major = element_line(colour="#f0f0f0"),
+                                                   panel.grid.minor = element_blank(),
+                                                  
+                                                     panel.background = element_blank())  
+p+ ggtitle("Random Forest Model")
+
+## plotting variable importance
+par(mar= c(4, 8, 2, 8)) 
+varImpPlot(rfm,type=1, pch=19, main="Variable Importance Plot")
+
+##plotting best mtry
+try<- tuneRF(train[-5], train$landcover,ntree=500, stepFactor = 1, improve=0.05, trace=T, plot=T)
+
+
+##  plotting land area per class barplot
+barplot(Area, main="Area per landcover class", 
+        names.arg=c("Agriculture","Anthropogenic","Dense trees","Sparse trees","Water"), 
+        space=c(0.1,0.1,0.1,0.1,0.1), width=c(1,1,1,1), cex.main=0.8, cex.names=0.70, 
+        cex.axis=0.6, ylim=c(0,6000), ylab=c("Area in ha"), cex.lab=0.8)                                 
+
+                                  
